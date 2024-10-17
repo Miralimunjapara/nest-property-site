@@ -1,4 +1,4 @@
-import { Controller, Post, Get,BadRequestException,HttpStatus,HttpException, Body, UsePipes, Param, Put, Delete,UnauthorizedException,Res,NotFoundException,Request, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get,BadRequestException,HttpStatus,HttpException,Query, Body, UsePipes, Param, Put, Delete,UnauthorizedException,Res,NotFoundException,Request, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JoiValidationPipe } from '../dto/validation.pipe';
 import { CreateUserSchema, UpdateUserSchema, LoginUserSchema,ChangePasswordSchema } from '../dto/create-user.dto';
@@ -31,14 +31,19 @@ export class UserController {
   }
 
   @Get('/list')
-  @UseGuards(AuthGuard) 
-  async getUsers(@Request() req) {
-    const user=req.user;
-    
-    if(user.role==='USER'){
-      throw new UnauthorizedException('only admin access!!')
+  @UseGuards(AuthGuard)
+  async getUsers(@Request() req, @Query('page') page: number =1, @Query('limit') limit: number=5 ) {
+    const user = req.user;
+  
+    if (user.role === 'USER') {
+      throw new UnauthorizedException('Only admin access!!');
     }
-    return this.userService.getUsers()
+  
+
+    const pageNumber = Math.max(page);
+    const pageSize = Math.max(limit);
+  
+    return this.userService.getUsers(pageNumber, pageSize);
   }
 
   @Get('/:id')

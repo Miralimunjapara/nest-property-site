@@ -12,8 +12,14 @@ export class PropertyService {
     });
   }
 
-  async getAllProperties() {
+  async getAllProperties(page:number,limit:number) {
+    const offset=(page - 1)*limit;
+
+    const totalProperties=await this.prisma.property.count();
+
     const properties=await this.prisma.property.findMany({
+      skip:offset,
+      take:limit,
       select: {
         id: true,
         name:true,
@@ -35,7 +41,10 @@ export class PropertyService {
  return{
   statusCode:200,
   message:"properties fetched successfully",
-  data:properties
+  data:properties,
+  totalItems: totalProperties,
+  totalPages: Math.ceil(totalProperties / limit),
+  currentPage: page,
 }
     
   }

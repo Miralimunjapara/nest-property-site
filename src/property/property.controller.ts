@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Delete,BadRequestException, Param, Body, Request,UseInterceptors, UploadedFiles,UnauthorizedException, ValidationPipe, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete,BadRequestException, Param, Query,Body, Request,UseInterceptors, UploadedFiles,UnauthorizedException, ValidationPipe, UseGuards } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import {propertySchema} from '../dto/create-property.dto'
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -8,7 +8,6 @@ import { JoiValidationPipe } from 'src/dto/validation.pipe';
 import { AuthGuard } from '../comman/auth.guard'
 import { AuthService } from 'src/auth/auth.service';
 import {ProImgService} from '../property-img/property-img.service'
-import { fileURLToPath } from 'url';
 import { MailService } from 'src/utils/mail.service';
 
 @Controller('property')
@@ -67,10 +66,10 @@ async create(
     
     await this.proImgService.createProImgs(property.id, files);
 
-    // Prepare images for email attachment
+    
     attachImages = files.map((file) => ({
       filename: file.filename,
-      path: `uploads/${file.filename}`,  // Path where images are stored
+      path: `uploads/${file.filename}`,  
     }));
   }
 
@@ -127,8 +126,11 @@ async create(
 
 
   @Get('list')
-  async getAllProperties() {
-    return this.propertyService.getAllProperties();
+  async getAllProperties(@Request() req, @Query('page') page: number =1, @Query('limit') limit: number=5 ) {
+    const pageNumber = Math.max(page);
+    const pageSize = Math.max(limit);
+  
+    return this.propertyService.getAllProperties(pageNumber,pageSize);
   }
 
   @Get(':id')

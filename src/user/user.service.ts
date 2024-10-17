@@ -19,24 +19,37 @@ export class UserService {
         return this.prisma.user.create({data})
     }
 
-    async getUsers(){
-        const alluser=await this.prisma.user.findMany({
-          select:{
-            id:true,
-            firstName:true,
-            lastName:true,
-            email:true,
-            password:true,
-            createdAt:true,
-            updatedAt:true,
-          }}
-        );
-        
-        return{
-          statusCode:200,
-          message:"users fetched successfully",
-          data:alluser
-        }
+    async getUsers(page: number, limit: number) {
+      
+      const offset = (page - 1) * limit;
+    
+      
+      const totalUsers = await this.prisma.user.count();
+    
+      
+      const users = await this.prisma.user.findMany({
+        skip: offset,
+        take: limit,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          password: true, 
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    
+      
+      return {
+        statusCode: 200,
+        message: "Users fetched successfully",
+        data: users,
+        totalItems: totalUsers,
+        totalPages: Math.ceil(totalUsers / limit),
+        currentPage: page,
+      };
     }
 
     async getUserById(id: string) {
